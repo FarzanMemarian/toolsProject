@@ -29,6 +29,12 @@ int jac (double t, const double y[], double *dfdy, double dfdt[], void *params);
 void odeSolver();
 
 
+int func2 (double t, const double y[], double f[], void *params);
+
+int jac2 (double t, const double y[], double *dfdy, double dfdt[], void *params);
+
+void odeSolver2();
+
 int main() {
 	double y0=1, h=0.01, nEuler = 100; //initialize variables
 	std::vector<double> y(nEuler);
@@ -41,9 +47,10 @@ int main() {
 	analyticalEuler(h, y0, nEuler);
 	
 	// odeSolver makes use of gsl ode solver to solve the y'=y
-	odeSolver(); 
+//	odeSolver(); 
 
-
+	// this is for the second problem
+	odeSolver2();
 
 	return 0;
 
@@ -155,32 +162,32 @@ int jac2 (double t, const double y[], double *dfdy,
   gsl_matrix_set (m, 1, 0, 0.0);
   gsl_matrix_set (m, 1, 1, 0.0);
   gsl_matrix_set (m, 1, 2, 0.0);
+  gsl_matrix_set (m, 1, 3, 0.0);
   gsl_matrix_set (m, 1, 4, 1.0);
   gsl_matrix_set (m, 1, 5, 0.0);
-  gsl_matrix_set (m, 1, 0, 0.0);
+  gsl_matrix_set (m, 2, 0, 0.0);
   gsl_matrix_set (m, 2, 1, 0.0);
   gsl_matrix_set (m, 2, 2, 0.0);
   gsl_matrix_set (m, 2, 3, 0.0);
   gsl_matrix_set (m, 2, 4, 0.0);
-  gsl_matrix_set (m, 2, 5, 0.0);
-  gsl_matrix_set (m, 2, 0, 1.0);
+  gsl_matrix_set (m, 2, 5, 1.0);
+  gsl_matrix_set (m, 3, 0, 0.0);
   gsl_matrix_set (m, 3, 1, 0.0);
   gsl_matrix_set (m, 3, 2, 0.0);
   gsl_matrix_set (m, 3, 3, -0.2);
   gsl_matrix_set (m, 3, 4, 5.0);
   gsl_matrix_set (m, 3, 5, 0.0);
-  gsl_matrix_set (m, 3, 0, 0.0);
   gsl_matrix_set (m, 4, 0, 0.0);
   gsl_matrix_set (m, 4, 1, 0.0);
   gsl_matrix_set (m, 4, 2, 0.0);
   gsl_matrix_set (m, 4, 3, -5.0);
   gsl_matrix_set (m, 4, 4, -0.2);
   gsl_matrix_set (m, 4, 5, 0.0);
+  gsl_matrix_set (m, 5, 0, 0.0);
   gsl_matrix_set (m, 5, 1, 0.0);
   gsl_matrix_set (m, 5, 2, 0.0);
   gsl_matrix_set (m, 5, 3, 0.0);
   gsl_matrix_set (m, 5, 4, 0.0);
-  gsl_matrix_set (m, 5, 5, 0.0);
   gsl_matrix_set (m, 5, 5, -0.2);
   dfdt[0] = 0.0;
   dfdt[1] = 0.0;
@@ -188,19 +195,20 @@ int jac2 (double t, const double y[], double *dfdy,
   dfdt[3] = 0.0;
   dfdt[4] = 0.0;
   dfdt[5] = 0.0;
+
   return GSL_SUCCESS;
 }
 
 void odeSolver2()
 {
-  gsl_odeiv2_system sys = {func2, jac2, 2};
+  gsl_odeiv2_system sys = {func2, jac2, 6};
 
   gsl_odeiv2_driver * d = 
-    gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk8pd,
+    gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk4,
 							  1e-6, 1e-6, 0.0);
   int i;
-  double t = 0.0, t1 = 100.0;
-  double y[2] = { 1.0, 0.0 };
+  double t = 0.0, t1 = 1.0;
+  double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
 
   for (i = 1; i <= 100; i++)
     {
@@ -213,11 +221,10 @@ void odeSolver2()
 			  break;
 			}
 	
-	      printf ("%.5e %.5e %.5e\n", t, y[0], y[1]);
+	      printf ("%.5e %.5e %.5e %.5e\n", t, y[0], y[1], y[2]);
 	    }
 
   gsl_odeiv2_driver_free (d);
-  return 0;
 }
 
 
