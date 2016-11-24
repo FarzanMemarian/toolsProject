@@ -38,20 +38,26 @@ void odeSolver2();
 int main() {
 	double y0=1, h=0.01, nEuler = 100; //initialize variables
 	std::vector<double> y(nEuler);
-	myEuler(y, h, y0, nEuler);
-	cout << "these are values of y obtained from myEuler" << endl;
-	for (int i=0; i<nEuler; i++){
-		cout << y[i] << endl;
-	}
-	cout << "these are values of y obtained from analytical solution" << endl;
-	analyticalEuler(h, y0, nEuler);
+	cout << "enter the problem number you are intereste, either 1 or 2"<< endl;
+	int i=0;
+	cin >> i;
+	if (i==1) 
+	{
+	myEuler(y, h, y0, nEuler); // This is the function I wrote for forward euler
+	analyticalEuler(h, y0, nEuler); // Analytical solution of y'=y
 	
 	// odeSolver makes use of gsl ode solver to solve the y'=y
-//	odeSolver(); 
-
+	odeSolver(); 
+	}
+	else if(i==2)
+	{
 	// this is for the second problem
 	odeSolver2();
-
+	}
+	else
+	{
+		cout << "enter either 1 or 2" << endl;
+	}
 	return 0;
 
 }
@@ -63,6 +69,11 @@ std::vector<double>  myEuler(vector<double> & y, double h, double y0, double nEu
 	for (int t=0; t<nEuler; t++){
 		y[t+1] = y[t] + h * y[t];
 	}
+
+	cout << "these are values of y obtained from myEuler" << endl;
+	for (int i=0; i<nEuler; i++){
+		cout << y[i] << endl;
+	}
 	return y;
 }
 
@@ -73,6 +84,8 @@ void analyticalEuler(double h, double y0, double nEuler)
 	// first order ODE y'=y(t)
 	double y=0; // the dependent variable
 	double t=0; // the independent variable
+
+	cout << "these are values of y obtained from analytical solution" << endl;
 	for (int i=0; i<nEuler; i++){
 		t=i*h;
 		y = exp(t);
@@ -108,8 +121,9 @@ void odeSolver()
 	gsl_odeiv2_system sys = {func, jac, 1};
 
 	gsl_odeiv2_driver * d = 
-		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk8pd,
+		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk2,
 				1e-6, 1e-6, 0.0);
+
 	int i;
 	double t = 0.0, t1 = 1.0;
 	double y[1] = { 1.0 };
@@ -204,13 +218,13 @@ void odeSolver2()
   gsl_odeiv2_system sys = {func2, jac2, 6};
 
   gsl_odeiv2_driver * d = 
-    gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk4,
+    gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_msbdf,
 							  1e-6, 1e-6, 0.0);
   int i;
-  double t = 0.0, t1 = 1.0;
+  double t = 0.0, t1 = 100.0;
   double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
 
-  for (i = 1; i <= 100; i++)
+  for (i = 1; i <= 10; i++)
     {
 	      double ti = i * t1 / 100.0;
 	      int status = gsl_odeiv2_driver_apply (d, &t, ti, y);
