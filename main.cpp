@@ -16,27 +16,9 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_odeiv2.h>
-
 using namespace std;
-
-// HEADERS
-std::vector<double>  myEuler(vector<double> & y, double h, double y0, double nEuler);
-
-void analyticalEuler(double h, double y0, double nEuler);
-
-int func (double t, const double y[], double f[], void *params);
-
-int jac (double t, const double y[], double *dfdy, double dfdt[], void *params);
-
-void odeSolver();
-
-
-int func2 (double t, const double y[], double f[], void *params);
-
-int jac2 (double t, const double y[], double *dfdy, double dfdt[], void *params);
-
-void odeSolver2();
-
+#include "headers.h"
+//#include "funcs.cpp"
 int main() {
 	// in main, the user is asked to decide which problem to choose. 
 	// then for each problem, the corresponding functions are called
@@ -74,7 +56,6 @@ int main() {
 	return 0;
 }
 
-
 std::vector<double>  myEuler(vector<double> & y, double h, double y0, double nEuler)
 {
 	y[0]=y0;
@@ -105,12 +86,15 @@ void analyticalEuler(double h, double y0, double nEuler)
 	double y=0; // the dependent variable
 	double t=0; // the independent variable
 
+	ofstream myfile;
+	myfile.open("analyticalEuler.txt");
 	cout << "these are values of y obtained from analytical solution" << endl;
 	for (int i=0; i<nEuler; i++){
 		t=i*h;
 		y = exp(t);
-		cout << y << endl;
+		myfile  << y << endl;
 	}
+	myfile.close();
 }
 
 
@@ -148,6 +132,8 @@ void odeSolver()
 	double t = 0.0, t1 = 1.0;
 	double y[1] = { 1.0 };
 
+	ofstream myfile;
+	myfile.open("gslSolverProb1.txt");
 	for (i = 1; i <= 100; i++)
 	{
 		double ti = i * t1 / 100.0;
@@ -160,8 +146,9 @@ void odeSolver()
 		}
 
 		printf ("%.5e %.5e \n", t, y[0]);
+		myfile  << t << y[0] << endl;
 	}
-
+	myfile.close();
 	gsl_odeiv2_driver_free (d);
 }
 
@@ -260,5 +247,4 @@ void odeSolver2()
 
 	gsl_odeiv2_driver_free (d);
 }
-
 
