@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <math.h>
 #include <stdlib.h>
 #include <vector>
@@ -19,10 +20,11 @@
 using namespace std;
 #include "headers.h"
 //#include "funcs.cpp"
+
+string DEBUG = "NOset";
 int main() {
 	// in main, the user is asked to decide which problem to choose. 
 	// then for each problem, the corresponding functions are called
-
 	bool j = true;
 	while (j == true){
 		cout << "enter the problem number you are interested in, either 1 or 2"<< endl;
@@ -63,16 +65,19 @@ std::vector<double>  myEuler(vector<double> & y, double h, double y0, double nEu
 		y[t+1] = y[t] + h * y[t];
 	}
 
-	cout << "these are values of y obtained from myEuler" << endl;
-	for (int i=0; i<nEuler; i++){
-		cout << y[i] << endl;
+	// write debug output to screen
+	if (DEBUG == "set"){
+		cout << "these are values of y obtained from myEuler" << endl;
+		for (int i=0; i<nEuler; i++){
+			cout << y[i] << endl;
+		}
 	}
-	
+
 	// write output to a file
 	ofstream myfile;
 	myfile.open("prob1MyEuler.txt");
 	for(int i=0; i<nEuler; i++){
-		myfile  << y[i] << endl;
+		myfile  << i  << "   " << y0 + i*h  << "   " << y[i] << endl;
 	}
 	myfile.close();
 	return y;
@@ -88,11 +93,18 @@ void analyticalEuler(double h, double y0, double nEuler)
 
 	ofstream myfile;
 	myfile.open("analyticalEuler.txt");
-	cout << "these are values of y obtained from analytical solution" << endl;
+
+	if (DEBUG == "set"){
+		cout << "these are values of y obtained from analytical solution" << endl;
+	}
 	for (int i=0; i<nEuler; i++){
 		t=i*h;
 		y = exp(t);
-		myfile  << y << endl;
+
+		if (DEBUG == "set"){
+			cout << i<< "   " << t << "   "  << y << endl;
+		}
+		myfile  << i << "   " << t << "   "  << y << endl;
 	}
 	myfile.close();
 }
@@ -144,8 +156,9 @@ void odeSolver()
 			printf ("error, return value=%d\n", status);
 			break;
 		}
-
+		if (DEBUG == "set"){
 		printf ("%.5e %.5e \n", t, y[0]);
+		}
 		myfile  << t << y[0] << endl;
 	}
 	myfile.close();
@@ -228,10 +241,13 @@ void odeSolver2()
 		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_msbdf,
 				1e-6, 1e-6, 0.0);
 	int i;
-	double t = 0.0, t1 = 100.0;
+	double t = 0.0, t1 = 10.0;
 	double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
 
-	for (i = 1; i <= 10; i++)
+	FILE * pFile;
+	pFile = fopen ("prob2.txt","w");
+
+	for (i = 1; i <= 100; i++)
 	{
 		double ti = i * t1 / 100.0;
 		int status = gsl_odeiv2_driver_apply (d, &t, ti, y);
@@ -242,9 +258,12 @@ void odeSolver2()
 			break;
 		}
 
-		printf ("%.5e %.5e %.5e %.5e\n", t, y[0], y[1], y[2]);
+		//myfile  << t << y[0] << y[1] << y[2] << y[3] << y[4] << y[5] << endl;
+		fprintf (pFile, "%.5e     %.5e     %.5e     %.5e     %.5e     %.5e     %.5e\n", t, y[0], y[1], y[2], y[3], y[4], y[5]);
+		//printf ("%.5e %.5e %.5e %.5e\n", t, y[0], y[1], y[2]);
 	}
 
+	fclose(pFile);
 	gsl_odeiv2_driver_free (d);
 }
 
