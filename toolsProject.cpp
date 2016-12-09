@@ -20,12 +20,20 @@
 #include <gsl/gsl_errno.h>
 #include <grvy.h>
 using namespace std;
+using namespace GRVY;
 #include "headers.h"
 
-string DEBUG = "NOset";
-int main() {
+int DEBUG = 1;
+int main(int argc, char *argv[) {
 	// in main, the user is asked to decide which problem to choose. 
 	// then for each problem, the corresponding functions are called
+	
+	// reading input using GRVY
+	GRVY_Input_CLASS iparse;     // input parsing object
+	int problem, debug, verification;
+	double h, method;
+
+	
 	bool j = true;
 	while (j == true){
 		cout << "enter the problem number you are interested in, either 1 or 2"<< endl;
@@ -70,7 +78,7 @@ std::vector<double>  myEuler(vector<double> & y, double h, double y0, double nEu
 	}
 
 	// write debug output to screen
-	if (DEBUG == "set"){
+	if (DEBUG == 1){
 		cout << "these are values of y obtained from myEuler" << endl;
 		for (int i=0; i<nEuler; i++){
 			cout << y[i] << endl;
@@ -98,14 +106,14 @@ void analyticalEuler(double h, double y0, double nEuler)
 	ofstream myfile;
 	myfile.open("analyticalEuler.txt");
 
-	if (DEBUG == "set"){
+	if (DEBUG == 1){
 		cout << "these are values of y obtained from analytical solution" << endl;
 	}
 	for (int i=0; i<nEuler; i++){
 		t=i*h;
 		y = exp(t);
 
-		if (DEBUG == "set"){
+		if (DEBUG == 1){
 			cout << i<< "   " << t << "   "  << y << endl;
 		}
 		myfile  << i << "   " << t << "   "  << y << endl;
@@ -160,7 +168,7 @@ void odeSolver()
 			printf ("error, return value=%d\n", status);
 			break;
 		}
-		if (DEBUG == "set"){
+		if (DEBUG == 1){
 		printf ("%.5e %.5e \n", t, y[0]);
 		}
 		myfile  << t << y[0] << endl;

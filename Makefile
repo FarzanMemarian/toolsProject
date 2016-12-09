@@ -15,20 +15,11 @@ $(FOO): $(OBJ)
 toolsProject := header.h
 #test1:
 #	./ODE input1.txt > output1.txt
-#	diff correct1.txt output1.txt
+#	diff knownAns.txt output1.txt
 #test2:
 #	./ODE input2.txt > output2.txt
 #	diff correct2.txt output2.txt
-#test3:
-#	./ODE input3.txt > output3.txt
-#	diff correct3.txt output3.txt
-#test4:
-#	./ODE input4.txt > output4.txt
-#	diff correct4.txt output4.txt
-#test5:
-#	./ODE input5.txt > output5.txt
-#	diff correct5.txt output5.txt
-#check: test1 test2 test3 test4 test5
+#check: test1 test2 
 # Useful phony targets
 .PHONY: clean neat
 clean: neat

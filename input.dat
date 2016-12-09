@@ -1,0 +1,11 @@
+#------------------------------
+#Input file for tools project
+#------------------------------
+
+problem          = 1         # Problem number
+t1               = 100       # Max Time
+h                = 0.01      # step size
+odeMethod        = 'rk4'     # method used for problem 2
+verfication      = 1         # 1 turns on the verification mode and zero turns it off
+debug            = 1         # 1 turns on the debug mode and 0 turns it off
+
