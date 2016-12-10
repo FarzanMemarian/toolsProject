@@ -12,7 +12,7 @@ $(FOO): $(OBJ)
 	$(CC) $(LDFLAGS) $(LDLIBS) -o $@ $^
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $<
-toolsProject := header.h
+toolsProject := headers.h
 #test1:
 #	./ODE input1.txt > output1.txt
 #	diff knownAns.txt output1.txt

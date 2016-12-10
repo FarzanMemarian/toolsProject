@@ -11,7 +11,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <string>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 #include <math.h>
 #include <stdlib.h>
 #include <vector>
@@ -23,62 +25,79 @@ using namespace std;
 using namespace GRVY;
 #include "headers.h"
 
-int DEBUG = 1;
-int main(int argc, char *argv[) {
+int debug =0;
+int main(int argc, char *argv[]) 
+{
 	// in main, the user is asked to decide which problem to choose. 
 	// then for each problem, the corresponding functions are called
-	
+
 	// reading input using GRVY
-	GRVY_Input_CLASS iparse;     // input parsing object
-	int problem, debug, verification;
-	double h, method;
+	GRVY_Input_Class iparse;     // input parsing object
+	int problem, verification, debug;
+	double h, maxTime;
+	string odeMethod;
 
-	
-	bool j = true;
-	while (j == true){
-		cout << "enter the problem number you are interested in, either 1 or 2"<< endl;
-		int i=0;
-		cin >> i;
-		if (i==1) 
-		{
-			// here we choose some of the parameters for the first problem
-			double y0=1; // value of y at t_0=0
-			double h=0.01; // step size
-			double nEuler = 100; // number of iterations
-			std::vector<double> y(nEuler);
-			myEuler(y, h, y0, nEuler); // This is the function I wrote for forward euler
-			analyticalEuler(h, y0, nEuler); // Analytical solution of y'=y
+	// Initi9alize/read the file
 
-			// odeSolver makes use of gsl ode solver to solve the y'=y
-			odeSolver();
-			j = false;
-		}
-		else if(i==2)
-		{
-			// this is for the second problem
-			odeSolver2();
-			j = false;
-		}
-		else
-		{
-			cout << "enter either 1 or 2" << endl;
-		}
+	if(! iparse.Open("./input.dat"))
+		exit(1);	
+
+	// Read specific variables 
+
+	if( iparse.Read_Var("problem",&problem) );
+	if( iparse.Read_Var("debug",&debug) );
+	if( iparse.Read_Var("verification",&verification) );
+	if( iparse.Read_Var("h",&h) );
+	if( iparse.Read_Var("maxTime",&maxTime) );
+	if( iparse.Read_Var("odeMethod",&odeMethod) );
+
+	if (debug == 1)
+	{
+		printf("--> %-11s = %i\n","problem",problem);
+		printf("--> %-11s = %i\n","debug",debug);
+		printf("--> %-11s = %i\n","verification",verification);
+		printf("--> %-11s = %f\n","h",h);
+		printf("--> %-11s = %i\n","maxTime",maxTime);
+		printf("--> %-11s = %s\n","odeMethod",odeMethod.c_str());
 	}
+	if (problem == 1) 
+	{
+		// here we choose some of the parameters for the first problem
+		double y0=1; // value of y at t_0=0
+		
+		myEuler(h, y0, maxTime); // This is the function I wrote for forward euler
+		analyticalEuler(h, y0, maxTime); // Analytical solution of y'=y
+
+		// odeSolver makes use of gsl ode solver to solve the y'=y
+		odeSolver();
+	}
+	else if(problem == 2)
+	{
+		// this is for the second problem
+		odeSolver2();
+	}
+	else
+	{
+		cout << "enter either 1 or 2 for problem in the input file" << endl;
+	}
+
 	return 0;
 }
 
 
 
 
-std::vector<double>  myEuler(vector<double> & y, double h, double y0, double nEuler)
+void  myEuler(double h, double y0, int maxTime)
 {
+	int nEuler = maxTime / h;
+	std::vector<double> y(nEuler);
 	y[0]=y0;
 	for (int t=0; t<nEuler; t++){
 		y[t+1] = y[t] + h * y[t];
 	}
 
 	// write debug output to screen
-	if (DEBUG == 1){
+	if (debug == 1){
 		cout << "these are values of y obtained from myEuler" << endl;
 		for (int i=0; i<nEuler; i++){
 			cout << y[i] << endl;
@@ -89,34 +108,34 @@ std::vector<double>  myEuler(vector<double> & y, double h, double y0, double nEu
 	ofstream myfile;
 	myfile.open("prob1MyEuler.txt");
 	for(int i=0; i<nEuler; i++){
-		myfile  << i  << "   " << y0 + i*h  << "   " << y[i] << endl;
+		myfile  << i*h  << "   " << y0 + i*h  << "   " << y[i] << endl;
 	}
 	myfile.close();
-	return y;
 }
 
 
-void analyticalEuler(double h, double y0, double nEuler)
+void analyticalEuler(double h, double y0, int maxTime)
 {
 	// this functin calculateds the analytical solution of the
 	// first order ODE y'=y(t)
 	double y=0; // the dependent variable
 	double t=0; // the independent variable
-
+	
+	int nEuler = maxTime / h;
 	ofstream myfile;
 	myfile.open("analyticalEuler.txt");
 
-	if (DEBUG == 1){
-		cout << "these are values of y obtained from analytical solution" << endl;
+	if (debug == 1){
+		cout << "these are values of y obtained from analytical solution, first column is time" << endl;
 	}
 	for (int i=0; i<nEuler; i++){
 		t=i*h;
 		y = exp(t);
 
-		if (DEBUG == 1){
+		if (debug == 1){
 			cout << i<< "   " << t << "   "  << y << endl;
 		}
-		myfile  << i << "   " << t << "   "  << y << endl;
+		myfile  << i*h << "   " << t << "   "  << y << endl;
 	}
 	myfile.close();
 }
@@ -168,8 +187,8 @@ void odeSolver()
 			printf ("error, return value=%d\n", status);
 			break;
 		}
-		if (DEBUG == 1){
-		printf ("%.5e %.5e \n", t, y[0]);
+		if (debug == 1){
+			printf ("%.5e %.5e \n", t, y[0]);
 		}
 		myfile  << t << y[0] << endl;
 	}
