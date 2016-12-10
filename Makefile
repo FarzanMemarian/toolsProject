@@ -13,13 +13,13 @@ $(FOO): $(OBJ)
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $<
 toolsProject := headers.h
-#test1:
-#	./ODE input1.txt > output1.txt
-#	diff knownAns.txt output1.txt
+check1:
+	./ input1.dat > output1.dat
+	diff knownAns1.dat output1.dat
 #test2:
 #	./ODE input2.txt > output2.txt
 #	diff correct2.txt output2.txt
-#check: test1 test2 
+check: check1  
 # Useful phony targets
 .PHONY: clean neat
 clean: neat

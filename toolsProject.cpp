@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
 		printf("--> %-11s = %i\n","maxTime",maxTime);
 		printf("--> %-11s = %s\n","odeMethod",odeMethod.c_str());
 	}
+	
 	if (problem == 1) 
 	{
 		// here we choose some of the parameters for the first problem
@@ -90,14 +91,30 @@ int main(int argc, char *argv[])
 		analyticalEuler(h, y0, maxTime); // Analytical solution of y'=y
 
 		// odeSolver makes use of gsl ode solver to solve the y'=y
-		odeSolver(h,  maxTime);
+		// Define the beginning of the portion being timed 
+		gt.BeginTimer("gslSolverProblem1");
+		odeSolver(h,  maxTime); // this function uses gsl solver to solve problem 1 
+		
+		// Define the beginning of the portion being timed 
+		gt.EndTimer("gslSolverProblem1");
+		gt.Finalize();  // Finalize the myEuler Timer
+		if (debug >= 1) { gt.Summarize(); } // Print performance summary to stdout
+		gt.Reset();     // Reset timers for next iteration
 	}
 	else if(problem == 2)
 	{
 		// this is for the second problem
+		
+		gt.BeginTimer("rk4 or rk2 or rkf45");
 		if (odeMethod == "rk4") { odeSolver_rk4(h, maxTime, odeMethod); }	
-		if (odeMethod == "rk2") { odeSolver_rk2(h, maxTime, odeMethod); }	
-		if (odeMethod == "rkf45") { odeSolver_rkf45(h, maxTime, odeMethod); }	
+		else if (odeMethod == "rk2") { odeSolver_rk2(h, maxTime, odeMethod); }	
+		else if (odeMethod == "rkf45") { odeSolver_rkf45(h, maxTime, odeMethod); }	
+		else { "wrong method name, please enter either rk2 or rk4 or rkf45 in the input file " }
+		// Define the beginning of the portion being timed 
+		gt.EndTimer("rk4 or rk2 or rkf45");
+		gt.Finalize();  // Finalize the myEuler Timer
+		if (debug >= 1) { gt.Summarize(); } // Print performance summary to stdout
+		gt.Reset();     // Reset timers for next iteration
 	}
 	else
 	{
