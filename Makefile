@@ -19,7 +19,7 @@ test1:
 	diff prob1MyEulerKNOWN.dat prob1MyEuler.dat
 # the output of the gsl for problem 1 is compared here
 test2: 
-	./toolsProject input2.dat 
+	./toolsProject input1.dat 
 	diff prob1GSLSolverKNOWN.dat prob1GSLSolver.dat 
 # the output of the gsl rk2 is compared here
 test3: 
