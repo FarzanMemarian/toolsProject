@@ -158,7 +158,7 @@ void  myEuler(double h, double y0, int maxTime)
 	if (debug == 2){
 		cout << "these are values of y obtained from myEuler" << endl;
 		for (int i=0; i<nEuler; i++){
-			cout << y[i] << endl;
+			cout << i*h << "   " <<y[i] << endl;
 		}
 	}
 
@@ -192,7 +192,7 @@ void analyticalEuler(double h, double y0, int maxTime)
 		y = exp(t);
 
 		if (debug == 2){
-			cout << i<< "   " << t << "   "  << y << endl;
+			cout << t << "   "  << y << endl;
 		}
 		myfile  << i*h << "   " << t << "   "  << y << endl;
 	}
@@ -226,20 +226,19 @@ void gslSolver(double  h, int maxTime)
 	gsl_odeiv2_system sys = {func, jac, 1};
 
 	gsl_odeiv2_driver * d = 
-		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk2,
-				1e-6, 1e-6, 0.0);
+		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk4,
+				h,10.0 , 10.0);
 
-	int i;
-	double t = 0.0, t1 = maxTime; 
+	int i,status;
+	double t = 0.0; 
 	double y[1] = { 1.0 };
-	double nIter = maxTime/h;
-
+	int nIter = maxTime/h;
+	
 	ofstream myfile;
 	myfile.open("prob1_1_GSLSolver.dat");
 	for (i = 0; i < nIter; i++)
 	{
-		double ti = i * t1 / nIter;
-		int status = gsl_odeiv2_driver_apply (d, &t, ti, y);
+		status =  gsl_odeiv2_driver_apply_fixed_step (d, &t, h, 1, y);
 
 		if (status != GSL_SUCCESS)
 		{
