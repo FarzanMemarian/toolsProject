@@ -41,20 +41,25 @@ int main(int argc, char *argv[])
 
 	// reading input using GRVY
 	using namespace GRVY;
-	
+
 	// Initialize timing library, the global library is initialized 
 	// with this call
 	gt.Init("GRVY Timing");
-	
+
 	GRVY_Input_Class iparse;     // input parsing object
 	int problem, verification;
 	double h, maxTime;
-	string odeMethod;
+	string odeMethod, inputName;
 
 	// Initi9alize/read the file
 
-	if(! iparse.Open("./input.dat"))
-		exit(1);	
+	if (argc > 1){
+		inputName = argv[1];
+	}
+	// Initialize/read the file 
+	if(! iparse.Open(inputName.c_str()))
+		exit(1);
+
 
 	// Read specific variables 
 
@@ -74,12 +79,12 @@ int main(int argc, char *argv[])
 		printf("--> %-11s = %i\n","maxTime",maxTime);
 		printf("--> %-11s = %s\n","odeMethod",odeMethod.c_str());
 	}
-	
+
 	if (problem == 1) 
 	{
 		// here we choose some of the parameters for the first problem
 		double y0=1; // value of y at t_0=0
-		
+
 		// Define the beginning of the portion being timed 
 		gt.BeginTimer("myEuler");
 		myEuler(h, y0, maxTime); // This is the function I wrote for forward euler
@@ -94,7 +99,7 @@ int main(int argc, char *argv[])
 		// Define the beginning of the portion being timed 
 		gt.BeginTimer("gslSolverProblem1");
 		odeSolver(h,  maxTime); // this function uses gsl solver to solve problem 1 
-		
+
 		// Define the beginning of the portion being timed 
 		gt.EndTimer("gslSolverProblem1");
 		gt.Finalize();  // Finalize the myEuler Timer
@@ -104,12 +109,24 @@ int main(int argc, char *argv[])
 	else if(problem == 2)
 	{
 		// this is for the second problem
-		
+
 		gt.BeginTimer("rk4 or rk2 or rkf45");
-		if (odeMethod == "rk4") { odeSolver_rk4(h, maxTime, odeMethod); }	
-		else if (odeMethod == "rk2") { odeSolver_rk2(h, maxTime, odeMethod); }	
-		else if (odeMethod == "rkf45") { odeSolver_rkf45(h, maxTime, odeMethod); }	
-		else { "wrong method name, please enter either rk2 or rk4 or rkf45 in the input file " }
+		if (odeMethod == "rk4") 
+		{ 
+			odeSolver_rk4(h, maxTime, odeMethod); 
+		}	
+		else if (odeMethod == "rk2") 
+		{ 
+			odeSolver_rk2(h, maxTime, odeMethod); 
+		}	
+		else if (odeMethod == "rkf45") 
+		{ 
+			odeSolver_rkf45(h, maxTime, odeMethod);
+		}	
+		else 
+		{ 
+			cout << "wrong method name, please enter either rk2 or rk4 or rkf45 in the input file " << endl;
+		}
 		// Define the beginning of the portion being timed 
 		gt.EndTimer("rk4 or rk2 or rkf45");
 		gt.Finalize();  // Finalize the myEuler Timer
@@ -147,7 +164,7 @@ void  myEuler(double h, double y0, int maxTime)
 
 	// write output to a file
 	ofstream myfile;
-	myfile.open("prob1MyEuler.dat");
+	myfile.open("prob1MyEulerKNOWN.dat");
 	for(int i=0; i<nEuler; i++){
 		myfile  << i*h  << "   " << y0 + i*h  << "   " << y[i] << endl;
 	}
@@ -165,7 +182,7 @@ void analyticalEuler(double h, double y0, int maxTime)
 
 	int nEuler = maxTime / h;
 	ofstream myfile;
-	myfile.open("prob1AlyticalEuler.dat");
+	myfile.open("prob1AlyticalEulerKNOWN.dat");
 
 	if (debug == 2){
 		cout << "these are values of y obtained from analytical solution, first column is time" << endl;
@@ -220,7 +237,7 @@ void odeSolver(double  h, int maxTime)
 	double nIter = maxTime/h;
 
 	ofstream myfile;
-	myfile.open("prob1GSLSolver.dat");
+	myfile.open("prob1GSLSolverKNOWN.dat");
 	for (i = 1; i <= nIter; i++)
 	{
 		double ti = i * t1 / nIter;
@@ -333,7 +350,7 @@ void odeSolver_rk4(double h, int maxTime, std::string& odeMethod)
 	double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
 
 	FILE * pFile;
-	pFile = fopen ("prob2_rk4.dat","w");
+	pFile = fopen ("prob2_rk4KNOWN.dat","w");
 
 	for (i = 1; i <= nIter; i++)
 	{
@@ -379,7 +396,7 @@ void odeSolver_rk2(double h, int maxTime, std::string& odeMethod)
 	double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
 
 	FILE * pFile;
-	pFile = fopen ("prob2_rk2.dat","w");
+	pFile = fopen ("prob2_rk2KNOWN.dat","w");
 
 	for (i = 1; i <= nIter; i++)
 	{
@@ -425,7 +442,7 @@ void odeSolver_rkf45(double h, int maxTime, std::string& odeMethod)
 	double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
 
 	FILE * pFile;
-	pFile = fopen ("prob2_rkf45.dat","w");
+	pFile = fopen ("prob2_rkf45KNOWN.dat","w");
 
 	for (i = 1; i <= nIter; i++)
 	{
