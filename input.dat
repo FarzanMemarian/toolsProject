@@ -2,9 +2,9 @@
 #Input file for tools project
 #------------------------------
 
-problem          = 1         # Problem number
-odeMethod        = 'rk4'     # method used for problem 2
+problem          = 2         # Problem number
+odeMethod        = 'rk4'     # method used for problem 2, either rk4, or rk2, or rkf45
 verification     = 1         # 1 turns on the verification mode and zero turns it off
-debugParsed      = 0         # 1 turns on the debug mode and 0 turns it off
-maxTime          = 100       # Max Time
+debug            = 0         # 1 turns on the debug mode and 0 turns it off
+maxTime          = 10        # Max Time
 h                = 0.01      # step size

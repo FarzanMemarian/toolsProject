@@ -10,13 +10,12 @@ int func (double t, const double y[], double f[], void *params);
 
 int jac (double t, const double y[], double *dfdy, double dfdt[], void *params);
 
-void odeSolver();
+void odeSolver(double, int);
 
 
 int func2 (double t, const double y[], double f[], void *params);
 
 int jac2 (double t, const double y[], double *dfdy, double dfdt[], void *params);
 
-void odeSolver2();
-
+void odeSolver2(double, int, std::string&);
 #endif 

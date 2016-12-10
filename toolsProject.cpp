@@ -64,17 +64,17 @@ int main(int argc, char *argv[])
 	{
 		// here we choose some of the parameters for the first problem
 		double y0=1; // value of y at t_0=0
-		
+
 		myEuler(h, y0, maxTime); // This is the function I wrote for forward euler
 		analyticalEuler(h, y0, maxTime); // Analytical solution of y'=y
 
 		// odeSolver makes use of gsl ode solver to solve the y'=y
-		odeSolver();
+		odeSolver(h,  maxTime);
 	}
 	else if(problem == 2)
 	{
 		// this is for the second problem
-		odeSolver2();
+		odeSolver2(h, maxTime, odeMethod);
 	}
 	else
 	{
@@ -120,10 +120,10 @@ void analyticalEuler(double h, double y0, int maxTime)
 	// first order ODE y'=y(t)
 	double y=0; // the dependent variable
 	double t=0; // the independent variable
-	
+
 	int nEuler = maxTime / h;
 	ofstream myfile;
-	myfile.open("analyticalEuler.txt");
+	myfile.open("prob1AlyticalEuler.txt");
 
 	if (debug == 1){
 		cout << "these are values of y obtained from analytical solution, first column is time" << endl;
@@ -162,7 +162,7 @@ int jac (double t, const double y[], double *dfdy, double dfdt[], void *params)
 	return GSL_SUCCESS;
 }
 
-void odeSolver()
+void odeSolver(double  h, int maxTime)
 {
 	// this function solves the ODE using gsl library
 	gsl_odeiv2_system sys = {func, jac, 1};
@@ -172,14 +172,15 @@ void odeSolver()
 				1e-6, 1e-6, 0.0);
 
 	int i;
-	double t = 0.0, t1 = 1.0;
+	double t = 0.0, t1 = maxTime; 
 	double y[1] = { 1.0 };
+	double nIter = maxTime/h;
 
 	ofstream myfile;
-	myfile.open("gslSolverProb1.txt");
-	for (i = 1; i <= 1000; i++)
+	myfile.open("prob1GSLSolver.txt");
+	for (i = 1; i <= nIter; i++)
 	{
-		double ti = i * t1 / 1000.0;
+		double ti = i * t1 / nIter;
 		int status = gsl_odeiv2_driver_apply (d, &t, ti, y);
 
 		if (status != GSL_SUCCESS)
@@ -266,23 +267,36 @@ int jac2 (double t, const double y[], double *dfdy,
 	return GSL_SUCCESS;
 }
 
-void odeSolver2()
+void odeSolver2(double h, int maxTime, std::string& odeMethod)
 {
+
 	gsl_odeiv2_system sys = {func2, jac2, 6};
 
-	gsl_odeiv2_driver * d = 
-		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk4,
+	if (odeMethod == "rk4")
+	{	
+		gsl_odeiv2_driver * d = 
+			gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk4,
+					1e-6, 1e-6, 0.0);
+	} else if (odeMethod == "rkf45")
+	{
+		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rkf45,
 				1e-6, 1e-6, 0.0);
+	} else if (odeMethod == "rk2")
+	{
+		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk2,
+				1e-6, 1e-6, 0.0);
+	}
 	int i;
-	double t = 0.0, t1 = 30;
+	double t = 0.0, t1 = maxTime;
+	int nIter = maxTime/h;
 	double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
 
 	FILE * pFile;
 	pFile = fopen ("prob2.txt","w");
 
-	for (i = 1; i <= 1000; i++)
+	for (i = 1; i <= nIter; i++)
 	{
-		double ti = i * t1 / 1000.0;
+		double ti = i * t1 / nIter;
 		int status = gsl_odeiv2_driver_apply (d, &t, ti, y);
 
 		if (status != GSL_SUCCESS)
@@ -292,7 +306,7 @@ void odeSolver2()
 		}
 
 		//myfile  << t << y[0] << y[1] << y[2] << y[3] << y[4] << y[5] << endl;
-		fprintf (pFile, "%.5e     %.5e     %.5e     %.5e     %.5e     %.5e     %.5e\n", t, y[0], y[1], y[2], y[3], y[4], y[5]);
+		fprintf (pFile, "%.5e     %.5e     %.5e     %.5e     %.5e     %.5e     %.5e\n", t*h, y[0], y[1], y[2], y[3], y[4], y[5]);
 		//printf ("%.5e %.5e %.5e %.5e\n", t, y[0], y[1], y[2]);
 	}
 
