@@ -17,5 +17,13 @@ int func2 (double t, const double y[], double f[], void *params);
 
 int jac2 (double t, const double y[], double *dfdy, double dfdt[], void *params);
 
-void odeSolver2(double, int, std::string&);
-#endif 
+void odeSolver_rk4(double, int, std::string&);
+
+void odeSolver_rk2(double, int, std::string&);
+
+void odeSolver_rkf45(double, int, std::string&);
+
+
+GRVY::GRVY_Timer_Class gt;
+
+#endif

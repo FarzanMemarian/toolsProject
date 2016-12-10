@@ -3,8 +3,9 @@
 #------------------------------
 
 problem          = 2         # Problem number
-odeMethod        = 'rk4'     # method used for problem 2, either rk4, or rk2, or rkf45
+odeMethod        = 'rkf45'     # method used for problem 2, either rk4, or rk2, or rkf45
 verification     = 1         # 1 turns on the verification mode and zero turns it off
-debug            = 0         # 1 turns on the debug mode and 0 turns it off
+debug            = 1         # determines the level of debug, zero is no debug, 1 only prints
+                             # the timing performace, 2 prints more 
 maxTime          = 10        # Max Time
 h                = 0.01      # step size

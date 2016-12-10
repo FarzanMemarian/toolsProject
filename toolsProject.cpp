@@ -21,9 +21,17 @@
 #include <gsl/gsl_odeiv2.h>
 #include <gsl/gsl_errno.h>
 #include <grvy.h>
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
+
+#define FUNC_BEGIN_TIMER gt.BeginTimer(__func__);
+#define FUNC_END_TIMER   gt.EndTimer  (__func__);
+
 using namespace std;
-using namespace GRVY;
 #include "headers.h"
+
+
 
 int debug =0;
 int main(int argc, char *argv[]) 
@@ -32,8 +40,14 @@ int main(int argc, char *argv[])
 	// then for each problem, the corresponding functions are called
 
 	// reading input using GRVY
+	using namespace GRVY;
+	
+	// Initialize timing library, the global library is initialized 
+	// with this call
+	gt.Init("GRVY Timing");
+	
 	GRVY_Input_Class iparse;     // input parsing object
-	int problem, verification, debug;
+	int problem, verification;
 	double h, maxTime;
 	string odeMethod;
 
@@ -51,7 +65,7 @@ int main(int argc, char *argv[])
 	if( iparse.Read_Var("maxTime",&maxTime) );
 	if( iparse.Read_Var("odeMethod",&odeMethod) );
 
-	if (debug == 1)
+	if (debug == 2)
 	{
 		printf("--> %-11s = %i\n","problem",problem);
 		printf("--> %-11s = %i\n","debug",debug);
@@ -64,8 +78,15 @@ int main(int argc, char *argv[])
 	{
 		// here we choose some of the parameters for the first problem
 		double y0=1; // value of y at t_0=0
-
+		
+		// Define the beginning of the portion being timed 
+		gt.BeginTimer("myEuler");
 		myEuler(h, y0, maxTime); // This is the function I wrote for forward euler
+		// Define the beginning of the portion being timed 
+		gt.EndTimer("myEuler");
+		gt.Finalize();  // Finalize the myEuler Timer
+		if (debug >= 1) { gt.Summarize(); } // Print performance summary to stdout
+		gt.Reset();     // Reset timers for next iteration
 		analyticalEuler(h, y0, maxTime); // Analytical solution of y'=y
 
 		// odeSolver makes use of gsl ode solver to solve the y'=y
@@ -74,7 +95,9 @@ int main(int argc, char *argv[])
 	else if(problem == 2)
 	{
 		// this is for the second problem
-		odeSolver2(h, maxTime, odeMethod);
+		if (odeMethod == "rk4") { odeSolver_rk4(h, maxTime, odeMethod); }	
+		if (odeMethod == "rk2") { odeSolver_rk2(h, maxTime, odeMethod); }	
+		if (odeMethod == "rkf45") { odeSolver_rkf45(h, maxTime, odeMethod); }	
 	}
 	else
 	{
@@ -89,6 +112,7 @@ int main(int argc, char *argv[])
 
 void  myEuler(double h, double y0, int maxTime)
 {
+	if (debug == 2) {cout << "the program is in function myEuler now (Problem 1)" << endl;}
 	int nEuler = maxTime / h;
 	std::vector<double> y(nEuler);
 	y[0]=y0;
@@ -97,7 +121,7 @@ void  myEuler(double h, double y0, int maxTime)
 	}
 
 	// write debug output to screen
-	if (debug == 1){
+	if (debug == 2){
 		cout << "these are values of y obtained from myEuler" << endl;
 		for (int i=0; i<nEuler; i++){
 			cout << y[i] << endl;
@@ -106,7 +130,7 @@ void  myEuler(double h, double y0, int maxTime)
 
 	// write output to a file
 	ofstream myfile;
-	myfile.open("prob1MyEuler.txt");
+	myfile.open("prob1MyEuler.dat");
 	for(int i=0; i<nEuler; i++){
 		myfile  << i*h  << "   " << y0 + i*h  << "   " << y[i] << endl;
 	}
@@ -118,21 +142,22 @@ void analyticalEuler(double h, double y0, int maxTime)
 {
 	// this functin calculateds the analytical solution of the
 	// first order ODE y'=y(t)
+	if (debug == 2) {cout << "the program is in function analyticalEuler now (Problem 1)" << endl;}
 	double y=0; // the dependent variable
 	double t=0; // the independent variable
 
 	int nEuler = maxTime / h;
 	ofstream myfile;
-	myfile.open("prob1AlyticalEuler.txt");
+	myfile.open("prob1AlyticalEuler.dat");
 
-	if (debug == 1){
+	if (debug == 2){
 		cout << "these are values of y obtained from analytical solution, first column is time" << endl;
 	}
 	for (int i=0; i<nEuler; i++){
 		t=i*h;
 		y = exp(t);
 
-		if (debug == 1){
+		if (debug == 2){
 			cout << i<< "   " << t << "   "  << y << endl;
 		}
 		myfile  << i*h << "   " << t << "   "  << y << endl;
@@ -164,6 +189,7 @@ int jac (double t, const double y[], double *dfdy, double dfdt[], void *params)
 
 void odeSolver(double  h, int maxTime)
 {
+	if (debug == 2) {cout << "the program is in function odeSolver now (Problem 1)" << endl;}
 	// this function solves the ODE using gsl library
 	gsl_odeiv2_system sys = {func, jac, 1};
 
@@ -177,7 +203,7 @@ void odeSolver(double  h, int maxTime)
 	double nIter = maxTime/h;
 
 	ofstream myfile;
-	myfile.open("prob1GSLSolver.txt");
+	myfile.open("prob1GSLSolver.dat");
 	for (i = 1; i <= nIter; i++)
 	{
 		double ti = i * t1 / nIter;
@@ -188,7 +214,7 @@ void odeSolver(double  h, int maxTime)
 			printf ("error, return value=%d\n", status);
 			break;
 		}
-		if (debug == 1){
+		if (debug == 2){
 			printf ("%.5e %.5e \n", t, y[0]);
 		}
 		myfile  << t << y[0] << endl;
@@ -267,32 +293,122 @@ int jac2 (double t, const double y[], double *dfdy,
 	return GSL_SUCCESS;
 }
 
-void odeSolver2(double h, int maxTime, std::string& odeMethod)
+void odeSolver_rk4(double h, int maxTime, std::string& odeMethod)
 {
-
+	if (debug == 2) {cout << "the program is in function odeSolver_rk4 now" << endl;}
 	gsl_odeiv2_system sys = {func2, jac2, 6};
 
-	if (odeMethod == "rk4")
-	{	
-		gsl_odeiv2_driver * d = 
-			gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk4,
-					1e-6, 1e-6, 0.0);
-	} else if (odeMethod == "rkf45")
-	{
-		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rkf45,
+	gsl_odeiv2_driver * d = 
+		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk4,
 				1e-6, 1e-6, 0.0);
-	} else if (odeMethod == "rk2")
-	{
-		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk2,
-				1e-6, 1e-6, 0.0);
-	}
+	//	else if (odeMethod == "rkf45")
+	//	{
+	//	} else if (odeMethod == "rk2")
+	//	{
+	//		gsl_odeiv2_driver * d = 
+	//			gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk2,
+	//					1e-6, 1e-6, 0.0);
+	//	}
+
 	int i;
 	double t = 0.0, t1 = maxTime;
 	int nIter = maxTime/h;
 	double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
 
 	FILE * pFile;
-	pFile = fopen ("prob2.txt","w");
+	pFile = fopen ("prob2_rk4.dat","w");
+
+	for (i = 1; i <= nIter; i++)
+	{
+		double ti = i * t1 / nIter;
+		int status = gsl_odeiv2_driver_apply (d, &t, ti, y);
+
+		if (status != GSL_SUCCESS)
+		{
+			printf ("error, return value=%d\n", status);
+			break;
+		}
+
+		//myfile  << t << y[0] << y[1] << y[2] << y[3] << y[4] << y[5] << endl;
+		fprintf (pFile, "%.5e     %.5e     %.5e     %.5e     %.5e     %.5e     %.5e\n", t*h, y[0], y[1], y[2], y[3], y[4], y[5]);
+		//printf ("%.5e %.5e %.5e %.5e\n", t, y[0], y[1], y[2]);
+	}
+
+	fclose(pFile);
+	gsl_odeiv2_driver_free (d);
+}
+
+
+void odeSolver_rk2(double h, int maxTime, std::string& odeMethod)
+{
+	if (debug == 2) {cout << "the program is in function odeSolver_rk2 now" << endl;}
+	gsl_odeiv2_system sys = {func2, jac2, 6};
+
+	gsl_odeiv2_driver * d = 
+		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk2,
+				1e-6, 1e-6, 0.0);
+	//	else if (odeMethod == "rkf45")
+	//	{
+	//	} else if (odeMethod == "rk2")
+	//	{
+	//		gsl_odeiv2_driver * d = 
+	//			gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk2,
+	//					1e-6, 1e-6, 0.0);
+	//	}
+
+	int i;
+	double t = 0.0, t1 = maxTime;
+	int nIter = maxTime/h;
+	double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
+
+	FILE * pFile;
+	pFile = fopen ("prob2_rk2.dat","w");
+
+	for (i = 1; i <= nIter; i++)
+	{
+		double ti = i * t1 / nIter;
+		int status = gsl_odeiv2_driver_apply (d, &t, ti, y);
+
+		if (status != GSL_SUCCESS)
+		{
+			printf ("error, return value=%d\n", status);
+			break;
+		}
+
+		//myfile  << t << y[0] << y[1] << y[2] << y[3] << y[4] << y[5] << endl;
+		fprintf (pFile, "%.5e     %.5e     %.5e     %.5e     %.5e     %.5e     %.5e\n", t*h, y[0], y[1], y[2], y[3], y[4], y[5]);
+		//printf ("%.5e %.5e %.5e %.5e\n", t, y[0], y[1], y[2]);
+	}
+
+	fclose(pFile);
+	gsl_odeiv2_driver_free (d);
+}
+
+
+void odeSolver_rkf45(double h, int maxTime, std::string& odeMethod)
+{
+	if (debug == 2) {cout << "the program is in function odeSolver_rkf45 now" << endl;}
+	gsl_odeiv2_system sys = {func2, jac2, 6};
+
+	gsl_odeiv2_driver * d = 
+		gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rkf45,
+				1e-6, 1e-6, 0.0);
+	//	else if (odeMethod == "rkf45")
+	//	{
+	//	} else if (odeMethod == "rk2")
+	//	{
+	//		gsl_odeiv2_driver * d = 
+	//			gsl_odeiv2_driver_alloc_y_new (&sys, gsl_odeiv2_step_rk2,
+	//					1e-6, 1e-6, 0.0);
+	//	}
+
+	int i;
+	double t = 0.0, t1 = maxTime;
+	int nIter = maxTime/h;
+	double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
+
+	FILE * pFile;
+	pFile = fopen ("prob2_rkf45.dat","w");
 
 	for (i = 1; i <= nIter; i++)
 	{
