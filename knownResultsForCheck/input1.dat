@@ -9,3 +9,4 @@ debug            = 0         # determines the level of debug, zero is no debug, 
                              # the timing performace, 2 prints more 
 maxTime          = 10        # Max Time
 h               = 0.01      # step size
+numberPrint    = 1 

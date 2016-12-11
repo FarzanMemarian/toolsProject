@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 
 	// reading input using GRVY
 	using namespace GRVY;
-
+	
 	// Initialize timing library, the global library is initialized 
 	// with this call
 	gt.Init("GRVY Timing");
@@ -89,19 +89,26 @@ int main(int argc, char *argv[])
 
 		// Define the beginning of the portion being timed 
 		gt.BeginTimer("myEuler");
-		myEuler(h, y0, maxTime); // This is the function I wrote for forward euler
+
+		int nEuler = maxTime / h;
+		std::vector<double> y(nEuler);		
+		myEuler(y ,h, y0, maxTime); // This is the function I wrote for forward euler
 		// Define the beginning of the portion being timed 
 		gt.EndTimer("myEuler");
 		gt.Finalize();  // Finalize the myEuler Timer
 		if (debug >= 1) { gt.Summarize(); } // Print performance summary to stdout
 		gt.Reset();     // Reset timers for next iteration
-		analyticalEuler(h, y0, maxTime); // Analytical solution of y'=y
 
 		// gslSolver makes use of gsl ode solver to solve the y'=y
 		// Define the beginning of the portion being timed 
 		gt.BeginTimer("gslSolverProblem1");
 		gslSolver(h,  maxTime); // this function uses gsl solver to solve problem 1 
 
+		if (verification == 1) {
+			std::vector<double> y1(nEuler);		
+			analyticalEuler(y1, h, y0, maxTime); // Analytical solution of y'=y
+			verificationFunc(y, y1, nEuler);
+		}
 		// Define the beginning of the portion being timed 
 		gt.EndTimer("gslSolverProblem1");
 		gt.Finalize();  // Finalize the myEuler Timer
@@ -146,11 +153,10 @@ int main(int argc, char *argv[])
 
 
 
-void  myEuler(double h, double y0, int maxTime)
+void  myEuler(std::vector<double>& y, double h, double y0, int maxTime)
 {
 	if (debug == 2) {cout << "the program is in function myEuler now (Problem 1)" << endl;}
 	int nEuler = maxTime / h;
-	std::vector<double> y(nEuler);
 	y[0]=y0;
 	for (int t=0; t<nEuler; t++){
 		y[t+1] = y[t] + h * y[t];
@@ -174,7 +180,7 @@ void  myEuler(double h, double y0, int maxTime)
 }
 
 
-void analyticalEuler(double h, double y0, int maxTime)
+void analyticalEuler(std::vector<double>& y1, double h, double y0, int maxTime)
 {
 	// this functin calculateds the analytical solution of the
 	// first order ODE y'=y(t)
@@ -192,7 +198,7 @@ void analyticalEuler(double h, double y0, int maxTime)
 	for (int i=0; i<=nEuler; i++){
 		t=i*h;
 		y = exp(t);
-
+		y1[i] = y;
 		if (debug == 2){
 			printf ("%.14e %.14e \n", t, y);
 		}
@@ -257,6 +263,26 @@ void gslSolver(double  h, int maxTime)
 	gsl_odeiv2_driver_free (d);
 }
 
+void verificationFunc (std::vector<double>& y, std::vector<double>& y1, int n) 
+{
+	double sum = 0;
+	double tol = 1e-6;
+	for (int i = 0; i < n; i++) 
+	{
+		sum = sum + abs(y1[i]-y[i]);	
+	}	
+	cout << "the error between my euler function and the analytical solution is:" << endl;
+	cout << sum << endl;
+	if (sum < tol) 
+	{
+		cout << "the error is within acceptable bounds based on the given tolerance" << endl;	
+	}
+	else 
+	{
+		cout << "the error is too high! exceeding the tolerance, try with reduced step size" << endl;
+	}
+ 
+}
 
 
 int func2 (double t, const double y[], double f[],
