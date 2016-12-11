@@ -118,22 +118,19 @@ int main(int argc, char *argv[])
 	{
 		// this is for the second problem
 
-		int length2 = 3 * maxTime / (h*numberPrint);
-		std::vector<double> y2(length2);		
-		std::vector<double> last(3);
-		std::vector<double> lastExact(3);
+		std::vector<double> last2(3);
 		gt.BeginTimer("rk4 or rk2 or rkf45");
 		if (odeMethod == "rk4") 
 		{ 
-			gslSolver_rk4(y2 , h, maxTime, odeMethod); 
+			last2 = gslSolver_rk4( h, maxTime, odeMethod); 
 		}	
 		else if (odeMethod == "rk2") 
 		{ 
-			gslSolver_rk2(y2,  h, maxTime, odeMethod); 
+			last2 = gslSolver_rk2( h, maxTime, odeMethod); 
 		}	
 		else if (odeMethod == "rkf45") 
 		{ 
-			gslSolver_rkf45(y2, h, maxTime, odeMethod);
+			last2 =gslSolver_rkf45(h, maxTime, odeMethod);
 		}	
 		else 
 		{ 
@@ -144,6 +141,11 @@ int main(int argc, char *argv[])
 		gt.Finalize();  // Finalize the myEuler Timer
 		if (debug >= 1) { gt.Summarize(); } // Print performance summary to stdout
 		gt.Reset();     // Reset timers for next iteration
+		
+		if (verification == 1) 
+		{
+			verificationFunc2(last2, h, maxTime, odeMethod);
+		}
 	}
 	else
 	{
@@ -153,7 +155,14 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-
+void verificationFunc2 (std::vector<double> last2, double h, int maxTime, std::string& odeMethod)
+{
+	double SmallStepSize = 0.00001;
+	std::vector<double> lastExact = gslSolver_rk4(SmallStepSize, maxTime, odeMethod);	
+	double err = sqrt( pow(last2[0]-lastExact[0] ,2) + pow(last2[1]-lastExact[1] ,2) + pow(last2[1]-lastExact[1],2) );
+	int n = maxTime/h;
+	printf ("%10d  %.14e \n", n, err);
+}
 
 
 void verificationFunc1 (double lastEuler, double lastAnalytical, double lastGSL, double h, int maxTime)
@@ -397,7 +406,7 @@ int jac2 (double t, const double y[], double *dfdy,
 }
 
 
-std::vector<double> gslSolver_rk2(std::vector<double>& , double h, int maxTime, std::string& odeMethod)
+std::vector<double> gslSolver_rk2( double h, int maxTime, std::string& odeMethod)
 {
 	if (debug == 2) {
 		cout << "the program is in function gslSolver_rk2 now " << endl;
@@ -447,7 +456,7 @@ std::vector<double> gslSolver_rk2(std::vector<double>& , double h, int maxTime, 
 
 
 
-std::vector<double> gslSolver_rk4(std::vector<double>& , double h, int maxTime, std::string& odeMethod)
+std::vector<double> gslSolver_rk4( double h, int maxTime, std::string& odeMethod)
 {
 	if (debug == 2) {
 		cout << "the program is in function gslSolver_rk4 now " << endl;
@@ -497,7 +506,7 @@ std::vector<double> gslSolver_rk4(std::vector<double>& , double h, int maxTime, 
 
 
 
-std::vector<double> gslSolver_rkf45(std::vector<double>& , double h, int maxTime, std::string& odeMethod)
+std::vector<double> gslSolver_rkf45( double h, int maxTime, std::string& odeMethod)
 {
 	if (debug == 2) {
 		cout << "the program is in function gslSolver_rkf45 now " << endl;
