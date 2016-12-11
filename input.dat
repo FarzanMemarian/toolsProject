@@ -8,6 +8,6 @@ verification     = 1         # 1 turns on the verification mode and zero turns i
 debug            = 0         # determines the level of debug, zero is no debug, 1 only prints
                              # the timing performace, 2 prints more 
 maxTime          = 20        # Max Time
-h                = 0.1      # step size
+h                = 0.0001      # step size
 numberPrint      = 1         # the number of stepsizes to print the results
 
