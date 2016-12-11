@@ -160,14 +160,14 @@ void  myEuler(double h, double y0, int maxTime)
 	if (debug == 2){
 		cout << "these are values of y obtained from myEuler" << endl;
 		for (int i=0; i<=nEuler; i++){
-			printf ("%.5e %.5e \n", i*h , y[i]);
+			printf ("%.14e %.14e \n", i*h , y[i]);
 		}
 	}
 
 	// write output to a file
 	ofstream myfile;
-	myfile.open("prob1_5_MyEuler.dat");
-	for(int i=0; i<nEuler; i++){
+	myfile.open("prob1_MyEuler.dat");
+	for(int i=0; i<=nEuler; i++){
 	if(i % numberPrint == 0) {myfile  << i*h  << "   " << y0 + i*h  << "   " << y[i] << endl; }
 	}
 	myfile.close();
@@ -184,7 +184,7 @@ void analyticalEuler(double h, double y0, int maxTime)
 
 	int nEuler = maxTime / h;
 	ofstream myfile;
-	myfile.open("prob1_5_AlyticalEuler.dat");
+	myfile.open("prob1_AlyticalEuler.dat");
 
 	if (debug == 2){
 		cout << "these are values of y obtained from analytical solution, first column is time" << endl;
@@ -194,7 +194,7 @@ void analyticalEuler(double h, double y0, int maxTime)
 		y = exp(t);
 
 		if (debug == 2){
-			printf ("%.5e %.5e \n", t, y);
+			printf ("%.14e %.14e \n", t, y);
 		}
 		myfile  << i*h << "   " << t << "   "  << y << endl;
 	}
@@ -237,8 +237,9 @@ void gslSolver(double  h, int maxTime)
 	int nIter = maxTime/h;
 	
 	ofstream myfile;
-	myfile.open("prob1_5_GSLSolver.dat");
-	for (i = 0; i < nIter; i++)
+	myfile.open("prob1_GSLSolver.dat");
+	myfile  << t << "   " << 1.00 << endl;
+	for (i = 1; i <= nIter; i++)
 	{
 		status =  gsl_odeiv2_driver_apply_fixed_step (d, &t, h, 1, y);
 
@@ -248,7 +249,7 @@ void gslSolver(double  h, int maxTime)
 			break;
 		}
 		if (debug == 2){
-			if (i % numberPrint == 0){ printf ("%.5e %.5e \n", t, y[0]);}
+			if (i % numberPrint == 0){ printf ("%.14e %.14e \n", t, y[0]);}
 		}
 		if (i % numberPrint == 0) {myfile  << t << "   " << y[0] << endl;}
 	}
@@ -345,8 +346,8 @@ void gslSolver_rk2(double h, int maxTime, std::string& odeMethod)
 	double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
 
 	FILE * pFile;
-	pFile = fopen ("prob2_6_rk2.dat","w");
-	
+	pFile = fopen ("prob2_rk2.dat","w");
+	fprintf (pFile, "%.14e     %.14e     %.14e     %.14e     %.14e     %.14e     %.14e\n",t , 0.00, 0.00, 0.00, 20.0, 0.0, 1.0);	
 	for (i = 1; i <= nIter; i++)
 	{
 		int status = gsl_odeiv2_driver_apply_fixed_step (d, &t, h, 1, y);
@@ -358,12 +359,12 @@ void gslSolver_rk2(double h, int maxTime, std::string& odeMethod)
 		}
 		if (debug == 2)
 		{
-			printf ("%.5e     %.5e     %.5e     %.5e\n", t, y[0], y[1], y[2]);
+			printf ("%.14e     %.14e     %.14e     %.14e\n", t, y[0], y[1], y[2]);
 		}		
 		
 		//myfile  << t << y[0] << y[1] << y[2] << y[3] << y[4] << y[5] << endl;
-		fprintf (pFile, "%.5e     %.5e     %.5e     %.5e     %.5e     %.5e     %.5e\n", t, y[0], y[1], y[2], y[3], y[4], y[5]);
-		//printf ("%.5e %.5e %.5e %.5e\n", t, y[0], y[1], y[2]);
+		fprintf (pFile, "%.14e     %.14e     %.14e     %.14e     %.14e     %.14e     %.14e\n", t, y[0], y[1], y[2], y[3], y[4], y[5]);
+		//printf ("%.14e %.14e %.14e %.14e\n", t, y[0], y[1], y[2]);
 	}
 
 	fclose(pFile);
@@ -388,8 +389,8 @@ void gslSolver_rkf45(double h, int maxTime, std::string& odeMethod)
 	double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
 
 	FILE * pFile;
-	pFile = fopen ("prob2_6_rkf45.dat","w");
-	
+	pFile = fopen ("prob2_rkf45.dat","w");
+	fprintf (pFile, "%.14e     %.14e     %.14e     %.14e     %.14e     %.14e     %.14e\n",t , 0.00, 0.00, 0.00, 20.0, 0.0, 2.0);
 	for (i = 1; i <= nIter; i++)
 	{
 		int status = gsl_odeiv2_driver_apply_fixed_step (d, &t, h, 1, y);
@@ -402,14 +403,14 @@ void gslSolver_rkf45(double h, int maxTime, std::string& odeMethod)
 		if (debug == 2)
 		{
 			
-		printf ("%.5e     %.5e     %.5e     %.5e\n", t/h, y[0], y[1], y[2]);
+		printf ("%.14e     %.14e     %.14e     %.14e\n", t/h, y[0], y[1], y[2]);
 
 		// cout << t << "   " << y[0] << "   " <<  y[1] << "   " << y[2] << endl;
 		}		
 		
 		//myfile  << t << y[0] << y[1] << y[2] << y[3] << y[4] << y[5] << endl;
-		fprintf (pFile, "%.5e     %.5e     %.5e     %.5e     %.5e     %.5e     %.5e\n", t, y[0], y[1], y[2], y[3], y[4], y[5]);
-		//printf ("%.5e %.5e %.5e %.5e\n", t, y[0], y[1], y[2]);
+		fprintf (pFile, "%.14e     %.14e     %.14e     %.14e     %.14e     %.14e     %.14e\n", t, y[0], y[1], y[2], y[3], y[4], y[5]);
+		//printf ("%.14e %.14e %.14e %.14e\n", t, y[0], y[1], y[2]);
 	}
 
 	fclose(pFile);
@@ -436,8 +437,8 @@ void gslSolver_rk4(double h, int maxTime, std::string& odeMethod)
 	double y[6] = {0.0, 0.0, 0.0, 20.0, 0.0, 2.0};
 
 	FILE * pFile;
-	pFile = fopen ("prob2_6_rk4.dat","w");
-	
+	pFile = fopen ("prob2_rk4.dat","w");
+	fprintf (pFile, "%.14e     %.14e     %.14e     %.14e     %.14e     %.14e     %.14e\n",t , 0.00, 0.00, 0.00, 20.0, 0.0, 2.0);
 	for (i = 1; i <= nIter; i++)
 	{
 		int status = gsl_odeiv2_driver_apply_fixed_step (d, &t, h, 1, y);
@@ -449,11 +450,11 @@ void gslSolver_rk4(double h, int maxTime, std::string& odeMethod)
 		}
 		if (debug == 2)
 		{
-			printf ("%.5e     %.5e     %.5e     %.5e\n", t, y[0], y[1], y[2]); 		}		
+			printf ("%.14e     %.14e     %.14e     %.14e\n", t, y[0], y[1], y[2]); 		}		
 		
 		//myfile  << t << y[0] << y[1] << y[2] << y[3] << y[4] << y[5] << endl;
-		if ( i % numberPrint  == 0 ) { fprintf (pFile, "%.5e     %.5e     %.5e     %.5e     %.5e     %.5e     %.5e\n", t, y[0], y[1], y[2], y[3], y[4], y[5]); }
-		//printf ("%.5e %.5e %.5e %.5e\n", t, y[0], y[1], y[2]);
+		if ( i % numberPrint  == 0 ) { fprintf (pFile, "%.14e     %.14e     %.14e     %.14e     %.14e     %.14e     %.14e\n", t, y[0], y[1], y[2], y[3], y[4], y[5]); }
+		//printf ("%.14e %.14e %.14e %.14e\n", t, y[0], y[1], y[2]);
 	}
 
 	fclose(pFile);
