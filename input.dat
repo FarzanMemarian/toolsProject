@@ -5,7 +5,9 @@
 problem          = 1         # Problem number
 odeMethod        = 'rk4'     # method used for problem 2, either rk4, or rk2, or rkf45
 verification     = 0         # 1 turns on the verification mode and zero turns it off
-debug            = 2         # determines the level of debug, zero is no debug, 1 only prints
+debug            = 0         # determines the level of debug, zero is no debug, 1 only prints
                              # the timing performace, 2 prints more 
-maxTime          = 10        # Max Time
-h                = 0.1      # step size
+maxTime          = 20        # Max Time
+h                = 0.00001      # step size
+numberPrint      = 1000         # the number of stepsizes to print the results
+

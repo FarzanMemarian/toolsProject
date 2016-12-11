@@ -1,0 +1,20 @@
+for problem one, the time is up to 20, the time steps tried are the following:
+problem 1 =  0.1
+problem 2 =  0.01
+problem 3 =  0.001    stored every 10 points
+problem 4 =  0.0001   stored every 100 points
+problem 5 =  0.00001  stored every 1000 points
+
+for problem 2, the following runs are performed on rk4.
+the time is 50, the schedule of the time steps is as follows:
+
+problem 1 = 0.1
+problem 2 = 0.01       
+problem 3 = 0.001      stored every 10 points
+problem 4 = 0.0001     stored every 100 points
+problem 5 = 0.00001    stored every 1000 points
+problem 6 = 0.000001   stored every 10000 points
+
+
+
+
